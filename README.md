@@ -93,7 +93,13 @@ L'analyse statique de l'application **UnCrackable Level 2** révèle un niveau d
 <img width="957" height="1147" alt="image" src="https://github.com/user-attachments/assets/2cc122b3-1f31-4b05-b77c-13189e7b3565" />
 
 ---
+<img width="1675" height="636" alt="image" src="https://github.com/user-attachments/assets/ae4deb01-0257-4b12-a36c-7075d21889e0" />
 
+<img width="1633" height="727" alt="image" src="https://github.com/user-attachments/assets/b9e3630d-0429-44b1-b1b7-5d7856180454" />
+
+<img width="1720" height="522" alt="image" src="https://github.com/user-attachments/assets/b31921f5-e1fb-47c8-ae3e-48561e24fbc9" />
+
+<img width="1671" height="487" alt="image" src="https://github.com/user-attachments/assets/cc2df80d-4970-417a-966d-4e98a8a6db41" />
 ## 4. Recommandations prioritaires
 
 1. **Augmenter minSdkVersion à 29** — Empêcher l'installation sur Android obsolète.
@@ -114,19 +120,7 @@ L'analyse statique de l'application **UnCrackable Level 2** révèle un niveau d
 | FORTIFY=False | MASVS-RESILIENCE-2 | Resilience |
 | Symboles non supprimés | MASVS-RESILIENCE-3 | Resilience |
 
----
-
-## 6. Annexes
-
-### Composants exportés
-
-<img width="1675" height="636" alt="image" src="https://github.com/user-attachments/assets/ae4deb01-0257-4b12-a36c-7075d21889e0" />
-
-<img width="1633" height="727" alt="image" src="https://github.com/user-attachments/assets/b9e3630d-0429-44b1-b1b7-5d7856180454" />
-
-<img width="1720" height="522" alt="image" src="https://github.com/user-attachments/assets/b31921f5-e1fb-47c8-ae3e-48561e24fbc9" />
-
-<img width="1671" height="487" alt="image" src="https://github.com/user-attachments/assets/cc2df80d-4970-417a-966d-4e98a8a6db41" />
+-
 
 ---
 
