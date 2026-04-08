@@ -1,100 +1,133 @@
-# Lab6_Resolution
 
 
-Lab 6 — Mobile Security Framework (MobSF)
+# Rapport d'audit de sécurité — Analyse statique APK
+## Lab 6 — Mobile Security Framework (MobSF)
 
-1. Informations générales
-ChampValeurAPK analyséUnCrackable-Level2.apkTaille880 KBDate d'analyse2026-04-07Analyste[Ton nom]Outil utiliséMobSF via DockerVMMobexlerScore de sécurité36/100
+---
 
-2. Résumé exécutif
-L'analyse statique de l'application UnCrackable-Level2 révèle un niveau de risque élevé (score 36/100). Les principales vulnérabilités concernent le mode debug activé, la détection de root, et des secrets potentiellement codés en dur dans le code natif.
+## 1. Informations générales
 
-3. Vulnérabilités identifiées
-🔴 Vulnérabilité 1 — Application en mode Debug
-
-Sévérité : Critique
-Référence MASVS : MASVS-RESILIENCE-2
-Description : L'attribut android:debuggable="true" est activé dans le manifeste. En production, cela permet à un attaquant de s'attacher à l'application avec un débogueur.
-Localisation : AndroidManifest.xml — élément <application>
-Impact : Un attaquant peut inspecter la mémoire, modifier le comportement de l'application à l'exécution, et extraire des données sensibles.
-Recommandation : Désactiver android:debuggable en production. Gradle le fait automatiquement en mode release.
+| Champ | Valeur |
+|---|---|
+| **APK analysé** | UnCrackable-Level2.apk |
+| **Taille** | 0.86 MB |
+| **Package** | owasp.mstg.uncrackable2 |
+| **SHA256** | 4c7980ef1f6cc29508f38417c2a5b9b7721eeb4a3d7f00a0c1a08f5192fa6ddd |
+| **Date d'analyse** | 2026-04-08 |
+| **Analyste** | [Ton nom] |
+| **Outil utilisé** | MobSF v4.0.6 via Docker |
+| **VM** | Mobexler |
+| **Score de sécurité** | 65/100 |
 
 <img width="957" height="928" alt="image" src="https://github.com/user-attachments/assets/4151d00d-f171-4924-a5df-4a3ec343f029" />
+
+---
+
+## 2. Résumé exécutif
+
+L'analyse statique de l'application **UnCrackable Level 2** révèle un niveau de risque **moyen** avec un score de **65/100**. Les principales vulnérabilités concernent la compatibilité avec des versions Android vulnérables (minSdk=19), la sauvegarde ADB activée, des privilèges root potentiels, et des protections insuffisantes dans la bibliothèque native.
+
 <img width="1918" height="985" alt="image" src="https://github.com/user-attachments/assets/ffb894a8-14cf-460f-b35e-6e13261c84c1" />
 
-🔴 Vulnérabilité 2 — Secrets codés en dur (code natif)
+---
 
-Sévérité : Critique
-Référence MASVS : MASVS-STORAGE-2
-Description : Des chaînes de caractères sensibles (clés, secrets) sont stockées en clair dans la bibliothèque native .so.
-Localisation : Bibliothèque native lib/ — fichier .so
-Impact : Un attaquant peut extraire ces secrets par rétro-ingénierie de la bibliothèque native avec des outils comme strings ou radare2.
-Recommandation : Ne jamais stocker de secrets en dur dans le code. Utiliser un serveur sécurisé ou Android Keystore.
+## 3. Vulnérabilités identifiées
+
+### 🔴 Vulnérabilité 1 — Compatible avec Android vulnérable (minSdk=19)
+- **Sévérité** : HIGH
+- **Référence MASVS** : MASVS-PLATFORM-1
+- **Description** : L'application peut être installée sur Android 4.4 (minSdk=19), une version qui ne reçoit plus de mises à jour de sécurité.
+- **Localisation** : `AndroidManifest.xml`
+- **Impact** : Les utilisateurs sont exposés à des vulnérabilités non corrigées.
+- **Recommandation** : Augmenter le `minSdkVersion` à 29 minimum.
 
 <img width="1440" height="857" alt="image" src="https://github.com/user-attachments/assets/10c53da5-8203-4203-81e7-1e6890718dd6" />
+
+---
+
+### 🟠 Vulnérabilité 2 — Sauvegarde ADB activée
+- **Sévérité** : WARNING
+- **Référence MASVS** : MASVS-STORAGE-1
+- **Description** : `android:allowBackup=true` permet d'extraire les données via ADB.
+- **Localisation** : `AndroidManifest.xml`
+- **Impact** : Un attaquant avec accès USB peut copier toutes les données de l'application.
+- **Recommandation** : Mettre `android:allowBackup="false"`.
+
 <img width="954" height="1143" alt="image" src="https://github.com/user-attachments/assets/e2401356-f032-4629-843f-63ea49119204" />
 
+---
 
-🟠 Vulnérabilité 3 — Détection de root insuffisante
+### 🟠 Vulnérabilité 3 — Demande de privilèges root
+- **Sévérité** : WARNING
+- **Référence MASVS** : MSTG-RESILIENCE-1
+- **Description** : L'application peut demander des privilèges Super User.
+- **Localisation** : `sg/vantagepoint/a/b.java`
+- **Standard** : CWE-250
+- **Impact** : Exécution avec des privilèges non nécessaires.
+- **Recommandation** : Supprimer toute demande de privilèges root.
 
-Sévérité : Élevée
-Référence MASVS : MASVS-RESILIENCE-1
-Description : L'application tente de détecter si le device est rooté, mais ces mécanismes peuvent être contournés facilement avec des outils comme Frida ou Magisk Hide.
-Localisation : MainActivity.java
-Impact : Un attaquant sur un device rooté peut contourner les protections et accéder aux données internes.
-Recommandation : Implémenter plusieurs mécanismes de détection combinés et utiliser des solutions de vérification d'intégrité (ex: Play Integrity API).
+<img width="1906" height="926" alt="image" src="https://github.com/user-attachments/assets/4952abb7-e80a-45e3-a10d-5b02b03da9ae" />
 
+---
 
-🟠 Vulnérabilité 4 — Absence de configuration de sécurité réseau
+### 🟡 Vulnérabilité 4 — Bibliothèque native sans fonctions fortifiées
+- **Sévérité** : WARNING
+- **Référence MASVS** : MASVS-RESILIENCE-2
+- **Description** : `x86/libfoo.so` n'a pas de fonctions fortifiées (FORTIFY=False).
+- **Localisation** : `lib/x86/libfoo.so`
+- **Impact** : Vulnérable aux attaques buffer overflow.
+- **Recommandation** : Recompiler avec `-D_FORTIFY_SOURCE=2`.
 
-Sévérité : Moyenne
-Référence MASVS : MASVS-NETWORK-1
-Description : Aucun fichier network_security_config.xml n'est présent. L'application utilise la configuration réseau par défaut d'Android.
-Localisation : res/xml/ — fichier absent
-Impact : Sans configuration explicite, l'application peut être vulnérable aux attaques de type Man-in-the-Middle sur des versions Android anciennes.
-Recommandation : Ajouter un fichier network_security_config.xml qui force le trafic HTTPS et désactive le trafic HTTP en clair.
+<img width="1916" height="735" alt="image" src="https://github.com/user-attachments/assets/eaec7f29-e002-40cb-a116-0e9e688ff11c" />
 
+---
 
-🟡 Vulnérabilité 5 — Permissions potentiellement excessives
+### 🟡 Vulnérabilité 5 — Symboles de débogage non supprimés
+- **Sévérité** : WARNING
+- **Référence MASVS** : MASVS-RESILIENCE-3
+- **Description** : Les symboles de débogage sont disponibles dans `libfoo.so`.
+- **Localisation** : `lib/x86/libfoo.so`
+- **Impact** : Facilite la rétro-ingénierie de l'application.
+- **Recommandation** : Supprimer les symboles avec `strip` à la compilation.
 
-Sévérité : Faible
-Référence MASVS : MASVS-PLATFORM-1
-Description : L'application déclare des permissions dont la nécessité n'est pas justifiée par ses fonctionnalités apparentes.
-Localisation : AndroidManifest.xml
-Impact : Surface d'attaque élargie inutilement.
-Recommandation : Appliquer le principe du moindre privilège — ne demander que les permissions strictement nécessaires.
-
-
-4. Recommandations prioritaires
-
-Désactiver le mode debug — Retirer android:debuggable="true" du manifeste ou configurer Gradle pour le désactiver automatiquement en mode release.
-Supprimer les secrets du code natif — Déplacer toute clé ou secret vers un serveur sécurisé ou Android Keystore.
-Ajouter une configuration réseau — Créer network_security_config.xml pour bloquer le trafic HTTP non chiffré.
-Renforcer la détection de root — Combiner plusieurs méthodes et utiliser la Play Integrity API.
-Revoir les permissions — Supprimer toute permission non justifiée par les fonctionnalités de l'application.
-
-<img width="922" height="1020" alt="image" src="https://github.com/user-attachments/assets/539e7534-1ba8-4244-9bc9-00894076923d" />
-
-Rapport d'audit de sécurité — Analyse statique APK
-5. Corrélation OWASP MASVS
-VulnérabilitéRéférence MASVSCatégorieMode debug activéMASVS-RESILIENCE-2ResilienceSecrets codés en durMASVS-STORAGE-2StorageDétection de root insuffisanteMASVS-RESILIENCE-1ResilienceAbsence config réseauMASVS-NETWORK-1NetworkPermissions excessivesMASVS-PLATFORM-1Platform
-
-6. Annexes
-Permissions déclarées
-
-Permissions normales : INTERNET, ACCESS_NETWORK_STATE
-Permissions dangereuses : à compléter selon rapport MobSF
 <img width="957" height="1147" alt="image" src="https://github.com/user-attachments/assets/2cc122b3-1f31-4b05-b77c-13189e7b3565" />
 
-Composants exportés
+---
 
-2/17 Exported Activities détectées
-0/0 Exported Services
-0/0 Exported Receivers
-1/1 Exported Providers (⚠️ à vérifier)
-<img width="1114" height="974" alt="image" src="https://github.com/user-attachments/assets/0e255da6-81f6-4b11-bb10-7349fee0968a" />
-Outils utilisés
+## 4. Recommandations prioritaires
 
-MobSF (Mobile Security Framework) via Docker
-VM Mobexler
-Firefox pour accès interface web MobSF
+1. **Augmenter minSdkVersion à 29** — Empêcher l'installation sur Android obsolète.
+2. **Désactiver `android:allowBackup`** — Protéger les données utilisateur.
+3. **Supprimer les demandes root** — Implémenter une détection de root.
+4. **Recompiler avec `-D_FORTIFY_SOURCE=2`** — Protéger contre les buffer overflows.
+5. **Supprimer les symboles debug** — Compliquer la rétro-ingénierie.
+
+---
+
+## 5. Corrélation OWASP MASVS
+
+| Vulnérabilité | Référence MASVS | Catégorie |
+|---|---|---|
+| minSdk trop bas | MASVS-PLATFORM-1 | Platform |
+| allowBackup activé | MASVS-STORAGE-1 | Storage |
+| Privilèges root | MSTG-RESILIENCE-1 | Resilience |
+| FORTIFY=False | MASVS-RESILIENCE-2 | Resilience |
+| Symboles non supprimés | MASVS-RESILIENCE-3 | Resilience |
+
+---
+
+## 6. Annexes
+
+### Composants exportés
+
+<img width="1675" height="636" alt="image" src="https://github.com/user-attachments/assets/ae4deb01-0257-4b12-a36c-7075d21889e0" />
+
+<img width="1633" height="727" alt="image" src="https://github.com/user-attachments/assets/b9e3630d-0429-44b1-b1b7-5d7856180454" />
+
+<img width="1720" height="522" alt="image" src="https://github.com/user-attachments/assets/b31921f5-e1fb-47c8-ae3e-48561e24fbc9" />
+
+<img width="1671" height="487" alt="image" src="https://github.com/user-attachments/assets/cc2df80d-4970-417a-966d-4e98a8a6db41" />
+
+---
+
+*Rapport généré dans le cadre du Lab 6 — Analyse statique d'applications Android avec MobSF*
